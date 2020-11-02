@@ -1,4 +1,4 @@
-//! List of jokes for the !joke command to use
+//! List of jokes for the `!joke` command to use
 
 // got these from the internet
 /// List of short jokes

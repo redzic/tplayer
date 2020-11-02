@@ -25,8 +25,7 @@ macro_rules! get_env_var {
 /// Get a user config from the environment variables, printing an error message and returning
 /// and error if it fails.
 fn get_user_config() -> anyhow::Result<twitchchat::UserConfig> {
-    let mut name = get_env_var!("BOT_USERNAME")?;
-    name.make_ascii_lowercase();
+    let name = get_env_var!("BOT_USERNAME")?.to_ascii_lowercase();
 
     let token = get_env_var!("OAUTH_TOKEN")?;
 
@@ -67,7 +66,7 @@ macro_rules! cmd_mpv {
 // The !rewind and !forward commands are essentially the same except for one operation,
 // which is to either add or subtract the desired offset from the current time. A
 // macro implements both of these slightly different functionalities without any sort
-// of dynamic dispatch without having any code duplication.
+// of dynamic dispatch and without having any code duplication.
 macro_rules! cmd_offset {
     ($bot:ident, $name:ident, $op:tt) => {
         let mut $name = |args: Args| {
@@ -77,7 +76,7 @@ macro_rules! cmd_offset {
                     _ => return,
                 };
 
-                let _ =mpv::send_command(
+                let _ = mpv::send_command(
                     format!(
                         "{{ \"command\": [\"set_property\", \"time-pos\", {}] }}",
                         time_pos $op seconds as f64
@@ -104,12 +103,13 @@ pub fn format_time(s: u64) -> String {
 }
 
 fn main() -> anyhow::Result<()> {
+    // TODO document this behavior, why it's not using ? operator
     let _ = dotenv::dotenv();
 
     let user_config = get_user_config()?;
 
-    let mut channel = get_env_var!("CHANNEL_NAME")?;
-    channel.make_ascii_lowercase();
+    // TODO document lowercasing
+    let channel = get_env_var!("CHANNEL_NAME")?.to_ascii_lowercase();
 
     let authorized_users = get_env_var!("AUTHORIZED_USERS")?;
 

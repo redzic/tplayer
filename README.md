@@ -1,6 +1,6 @@
 # tplayer-bot
 
-`tplayer-bot` is a Twitch bot designed to make it easier to watch videos with your friends through Twitch by controlling mpv on Linux through Twitch commands. It allows for users that you authorize in twitch chat to use commands like `!pause`, `!play`, `!rewind`, `!forward` and more to control mpv through Unix sockets.
+`tplayer-bot` is a Twitch bot designed to make it easier to watch videos with others through Twitch by controlling mpv on Linux through Twitch commands. It allows for users that you authorize in twitch chat to use commands like `!pause`, `!play`, `!rewind`, `!forward` and more to control mpv through Unix sockets.
 
 ## List of commands
 
