@@ -46,6 +46,7 @@ impl_get_json_as!(u64, as_u64);
 impl_get_json_as!(f64, as_f64);
 impl_get_json_as!(bool, as_bool);
 
+#[derive(Debug)]
 pub enum MpvError {
     Serde(serde_json::Error),
     Io(std::io::Error),
@@ -64,14 +65,21 @@ macro_rules! impl_MpvError_from {
 impl_MpvError_from!(serde_json::Error, Serde);
 impl_MpvError_from!(std::io::Error, Io);
 
-pub fn get_property(property: &str) -> Result<serde_json::Value, MpvError> {
-    serde_json::from_str(
-        send_command(format!("{{ \"command\": [\"get_property\", \"{}\"] }}", property).as_str())?
-            .as_str(),
-    )
-    .map_err(MpvError::from)
-}
+// pub fn get_property<'a>(property: &'a str) -> Result<&'a serde_json::Value, MpvError> {
+//     serde_json::from_str(
+//         send_command(format!("{{ \"command\": [\"get_property\", \"{}\"] }}", property).as_str())?
+//             .as_str(),
+//     )
+//     // .map(|x: serde_json::Value| &x["data"])
+//     .map_err(MpvError::from)
+// }
 
 pub fn get_property_as<T: GetJsonAs>(property: &str) -> Option<T> {
-    T::get_as(&get_property(property).ok()?)
+    let json: serde_json::Value = serde_json::from_str(
+        &send_command(format!("{{ \"command\": [\"get_property\", \"{}\"] }}", property).as_str())
+            .ok()?,
+    )
+    .ok()?;
+
+    T::get_as(json.get("data")?)
 }

@@ -142,12 +142,12 @@ fn main() -> anyhow::Result<()> {
     cmd_offset!(bot, forward, +);
 
     let mut pos = |args: Args| {
-        let time_pos = match mpv::get_property_as::<u64>("time-pos") {
+        let time_pos = match mpv::get_property_as::<f64>("time-pos") {
             Some(time_pos) => time_pos,
             _ => return,
         };
 
-        let duration = match mpv::get_property_as::<u64>("duration") {
+        let duration = match mpv::get_property_as::<f64>("duration") {
             Some(duration) => duration,
             _ => return,
         };
@@ -156,9 +156,9 @@ fn main() -> anyhow::Result<()> {
             args.msg,
             format!(
                 "{} / {} ({} remaining)",
-                format_time(time_pos),
-                format_time(duration),
-                format_time(duration - time_pos),
+                format_time(time_pos as u64),
+                format_time(duration as u64),
+                format_time((duration - time_pos) as u64),
             )
             .as_str(),
         );
