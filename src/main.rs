@@ -1,5 +1,3 @@
-#![warn(clippy::pedantic, clippy::nursery)]
-
 use hashbrown::HashMap;
 use rand::Rng;
 use std::env;
@@ -107,6 +105,9 @@ pub fn format_time(s: u64) -> String {
 
 fn main() -> anyhow::Result<()> {
     // TODO document this behavior, why it's not using ? operator
+
+    // The ? operator is not used because we don't want to return an error if a `.env` file is not found
+    // we could possibly read from the regular environment variables instead
     let _ = dotenv::dotenv();
 
     let user_config = get_user_config()?;
