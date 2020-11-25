@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+
 use hashbrown::HashMap;
 use rand::Rng;
 use std::env;
@@ -90,6 +92,7 @@ macro_rules! cmd_offset {
 }
 
 /// Formats the time of `s` (in seconds) into a human-readable string
+#[must_use]
 pub fn format_time(s: u64) -> String {
     let hours = ((s / 60) / 60) % 60;
     let minutes = (s / 60) % 60;
@@ -115,10 +118,10 @@ fn main() -> anyhow::Result<()> {
 
     let authorized_users: Vec<String> = authorized_users
         .split(',')
-        .map(|s| s.to_ascii_lowercase())
+        .map(str::to_ascii_lowercase)
         .collect();
 
-    let authorized_users: Vec<&str> = authorized_users.iter().map(|s| s.as_str()).collect();
+    let authorized_users: Vec<&str> = authorized_users.iter().map(String::as_str).collect();
 
     let mut bot = Bot {
         commands: HashMap::with_capacity(16),
@@ -216,6 +219,7 @@ where
 #[derive(Default)]
 struct Bot<'a, R: Rng> {
     commands: HashMap<&'a str, &'a mut dyn Command>,
+    // TODO use map instead?
     authorized_users: &'a [&'a str],
     rng: R,
 }

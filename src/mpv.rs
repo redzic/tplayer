@@ -56,7 +56,7 @@ macro_rules! impl_MpvError_from {
     ($error:ty, $variant:ident) => {
         impl From<$error> for MpvError {
             fn from(e: $error) -> Self {
-                MpvError::$variant(e)
+                Self::$variant(e)
             }
         }
     };
@@ -64,15 +64,6 @@ macro_rules! impl_MpvError_from {
 
 impl_MpvError_from!(serde_json::Error, Serde);
 impl_MpvError_from!(std::io::Error, Io);
-
-// pub fn get_property<'a>(property: &'a str) -> Result<&'a serde_json::Value, MpvError> {
-//     serde_json::from_str(
-//         send_command(format!("{{ \"command\": [\"get_property\", \"{}\"] }}", property).as_str())?
-//             .as_str(),
-//     )
-//     // .map(|x: serde_json::Value| &x["data"])
-//     .map_err(MpvError::from)
-// }
 
 pub fn get_property_as<T: GetJsonAs>(property: &str) -> Option<T> {
     let json: serde_json::Value = serde_json::from_str(
