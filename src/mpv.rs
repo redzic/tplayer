@@ -1,5 +1,7 @@
 //! Module for communicating with mpv through Unix sockets
 
+// TODO make set_property function or something?
+
 use std::process::{Command, Stdio};
 
 pub fn send_command(command: &str) -> std::io::Result<String> {

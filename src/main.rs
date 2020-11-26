@@ -114,12 +114,10 @@ fn main() -> anyhow::Result<()> {
     let channel = get_env_var!("CHANNEL_NAME")?.to_ascii_lowercase();
 
     let authorized_users = get_env_var!("AUTHORIZED_USERS")?;
-
     let authorized_users: Vec<String> = authorized_users
         .split(',')
         .map(str::to_ascii_lowercase)
         .collect();
-
     let authorized_users: Vec<&str> = authorized_users.iter().map(String::as_str).collect();
 
     let mut bot = Bot {
@@ -175,6 +173,44 @@ fn main() -> anyhow::Result<()> {
         }
     };
     cmd!(bot, sub);
+
+    let mut aud = |args: Args| {
+        if let CmdArgs::U16(track) = args.args {
+            let _ = mpv::send_command(
+                format!("{{ \"command\": [\"set_property\", \"aid\", {}] }}", track).as_str(),
+            );
+        }
+    };
+    cmd!(bot, aud);
+
+    let mut vol = |args: Args| {
+        if let CmdArgs::U16(volume) = args.args {
+            let _ = args.writer.say(args.msg, {
+                match mpv::send_command(
+                    format!(
+                        "{{ \"command\": [\"set_property\", \"volume\", {}] }}",
+                        volume
+                    )
+                    .as_str(),
+                ) {
+                    Ok(_) => format!("(volume has been set to {}%)", volume),
+                    Err(e) => format!("failed to set volume: {}", e),
+                }
+                .as_str()
+            });
+        } else {
+            let s;
+            let _ = args.writer.say(args.msg, {
+                if let Some(x) = mpv::get_property_as::<f64>("volume") {
+                    s = format!("volume: {}%", x);
+                    s.as_str()
+                } else {
+                    "(failed to get volume information)"
+                }
+            });
+        }
+    };
+    cmd!(bot, vol);
 
     let mut joke = |args: Args| {
         if let CmdArgs::U16(index) = args.args {
@@ -236,9 +272,9 @@ impl<'a, R: Rng> Bot<'a, R> {
 
         println!("Joining {}...", channel);
         if let Err(err) = runner.join(channel).await {
-            eprintln!("Error while joining '{}': {}", channel, err);
+            eprintln!("[ERROR] failed to join '{}': {}", channel, err);
         } else {
-            println!("Successfully joined {}.", channel);
+            println!("[INFO] successfully joined {}", channel);
         }
 
         self.main_loop(&mut runner).await
@@ -278,7 +314,7 @@ impl<'a, R: Rng> Bot<'a, R> {
                                         }
                                         .unwrap_or(10),
                                     ),
-                                    "!sub" => CmdArgs::U16(
+                                    "!sub" | "!aud" => CmdArgs::U16(
                                         match command_iter.next() {
                                             Some(x) => x.parse::<u16>().ok(),
                                             None => None,
@@ -289,6 +325,13 @@ impl<'a, R: Rng> Bot<'a, R> {
                                     "!joke" => CmdArgs::U16(
                                         self.rng.gen_range(0, jokes::JOKES.len() as u16),
                                     ),
+                                    "!vol" => match command_iter.next() {
+                                        Some(x) => match x.parse::<u16>() {
+                                            Ok(x) => CmdArgs::U16(x),
+                                            _ => CmdArgs::None,
+                                        },
+                                        None => CmdArgs::None,
+                                    },
                                     _ => CmdArgs::None,
                                 };
 
