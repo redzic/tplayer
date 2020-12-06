@@ -1,4 +1,4 @@
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use rand::Rng;
 use std::env;
 use twitchchat::PrivmsgExt as _;
@@ -113,17 +113,16 @@ fn main() -> anyhow::Result<()> {
     // TODO document lowercasing
     let channel = get_env_var!("CHANNEL_NAME")?.to_ascii_lowercase();
 
-    let authorized_users = get_env_var!("AUTHORIZED_USERS")?;
-    let authorized_users: Vec<String> = authorized_users
+    let authorized_users: HashSet<Box<str>> = get_env_var!("AUTHORIZED_USERS")?
         .split(',')
         .map(str::to_ascii_lowercase)
+        .map(String::into_boxed_str)
         .collect();
-    let authorized_users: Vec<&str> = authorized_users.iter().map(String::as_str).collect();
 
     let mut bot = Bot {
         commands: HashMap::with_capacity(16),
         rng: rand::thread_rng(),
-        authorized_users: &authorized_users,
+        authorized_users,
     };
 
     cmd_mpv!(
@@ -254,8 +253,7 @@ where
 #[derive(Default)]
 struct Bot<'a, R: Rng> {
     commands: HashMap<&'a str, &'a mut dyn Command>,
-    // TODO use map instead?
-    authorized_users: &'a [&'a str],
+    authorized_users: HashSet<Box<str>>,
     rng: R,
 }
 
@@ -272,9 +270,9 @@ impl<'a, R: Rng> Bot<'a, R> {
 
         println!("Joining {}...", channel);
         if let Err(err) = runner.join(channel).await {
-            eprintln!("[ERROR] failed to join '{}': {}", channel, err);
+            eprintln!("[ERROR] Failed to join '{}': {}", channel, err);
         } else {
-            println!("[INFO] successfully joined {}", channel);
+            println!("[INFO] Successfully joined {}", channel);
         }
 
         self.main_loop(&mut runner).await
@@ -297,7 +295,7 @@ impl<'a, R: Rng> Bot<'a, R> {
                         }
                     }
 
-                    if self.authorized_users.contains(&pm.name()) {
+                    if self.authorized_users.contains(pm.name()) {
                         let mut command_iter = pm.data().split_ascii_whitespace();
 
                         if let Some(command) = command_iter.next() {
