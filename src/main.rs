@@ -321,7 +321,7 @@ impl<'a, R: Rng> Bot<'a, R> {
                                         .unwrap_or(0),
                                     ),
                                     "!joke" => CmdArgs::U16(
-                                        self.rng.gen_range(0, jokes::JOKES.len() as u16),
+                                        self.rng.gen_range(0..jokes::JOKES.len() as u16),
                                     ),
                                     "!vol" => match command_iter.next() {
                                         Some(x) => match x.parse::<u16>() {

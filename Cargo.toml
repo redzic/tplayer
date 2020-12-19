@@ -5,10 +5,10 @@ name = "tplayer"
 version = "0.1.0"
 
 [dependencies]
-anyhow = "1.0.35"
+anyhow = "1.0.36"
 dotenv = "0.15.0"
 hashbrown = "0.9.1"
-rand = "0.7.3"
+rand = "0.8.0"
 serde_json = "1.0.60"
 smol = "1.2.5"
 twitchchat = { version = "0.14.8", features = ["async", "smol"] }
