@@ -8,8 +8,6 @@ use twitchchat::{
     UserConfig,
 };
 
-// TODO: log when there's an error with the mpv connection
-
 mod jokes;
 mod mpv;
 
@@ -136,6 +134,9 @@ fn main() -> anyhow::Result<()> {
         pause,
         r#"{ "command": ["set_property", "pause", true] }"#
     );
+
+    cmd_mpv!(bot, nextc, r#"{ "command": ["add", "chapter", "1"] }"#);
+    cmd_mpv!(bot, prevc, r#"{ "command": ["add", "chapter", "-1"] }"#);
 
     cmd_offset!(bot, rewind, -);
     cmd_offset!(bot, forward, +);
